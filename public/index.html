@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCC Portal — IIM Amritsar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#6E1423; --ink-soft:#8A2432; --parchment:#FAF7F1; --card:#FFFFFF;
+    --brass:#C9972B; --brass-soft:#F3E4C0; --rust:#B8452F; --rust-soft:#F4DDD5;
+    --sage:#5E7259; --sage-soft:#DEE6DA; --slate:#6B7280; --line:#E4DDD0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--parchment);color:var(--ink);font-family:'Work Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.serif{font-family:'Fraunces',serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .topbar{background:var(--ink);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand img.logo{height:38px;background:#fff;border-radius:6px;padding:3px 6px;}
+  .brand .brand-text{display:flex;flex-direction:column;line-height:1.2;}
+  .brand .mark{font-family:'Fraunces',serif;font-weight:700;font-size:20px;}
+  .brand .sub{font-size:11px;color:#E7C9CE;text-transform:uppercase;letter-spacing:0.14em;font-family:'JetBrains Mono',monospace;}
+  .search{flex:1;max-width:360px;min-width:180px;position:relative;}
+  .search input{width:100%;padding:9px 14px 9px 34px;border-radius:7px;border:1px solid #8A2432;background:#7E1C2C;color:#fff;font-family:'Work Sans',sans-serif;font-size:14px;}
+  .search input::placeholder{color:#E7C9CE;}
+  .search::before{content:"⌕";position:absolute;left:12px;top:7px;color:#E7C9CE;font-size:16px;}
+  .ticker-wrap{background:var(--brass-soft);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;padding:9px 0;}
+  .ticker-label{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;background:var(--brass);color:#fff;padding:3px 10px;border-radius:4px;margin-left:20px;vertical-align:middle;}
+  .ticker-track{display:inline-block;padding-left:100%;animation:scroll 32s linear infinite;vertical-align:middle;font-size:13.5px;}
+  .ticker-track span{margin-right:48px;color:#4A3A14;}
+  @keyframes scroll{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 24px 80px;}
+  .hero{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px;margin-bottom:24px;}
+  .hero h1{font-size:34px;margin:0 0 6px;font-weight:600;}
+  .hero p{margin:0;color:var(--slate);max-width:520px;font-size:14.5px;}
+  .stat-strip{display:flex;gap:22px;}
+  .stat{text-align:right;}
+  .stat b{display:block;font-family:'Fraunces',serif;font-size:26px;color:var(--ink);}
+  .stat span{font-size:11px;color:var(--slate);text-transform:uppercase;letter-spacing:0.08em;}
+
+  /* ---- View tabs ---- */
+  .view-tabs{display:flex;gap:8px;margin-bottom:22px;border-bottom:1px solid var(--line);}
+  .view-tab{padding:10px 4px;margin-right:26px;font-size:14.5px;font-weight:600;color:var(--slate);border-bottom:2px solid transparent;cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;font-family:'Work Sans',sans-serif;}
+  .view-tab.active{color:var(--ink);border-color:var(--brass);}
+  .view-pane{display:none;}
+  .view-pane.active{display:block;}
+
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px;padding-bottom:20px;border-bottom:1px solid var(--line);}
+  .chip{border:1px solid var(--line);background:#fff;padding:8px 15px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;color:var(--ink-soft);display:flex;align-items:center;gap:7px;transition:all .15s ease;}
+  .chip:hover{border-color:var(--ink);}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .chip .dot{width:7px;height:7px;border-radius:50%;}
+  .chip[data-tag="recruiting"] .dot{background:var(--brass);}
+  .chip[data-tag="event"] .dot{background:var(--sage);}
+  .chip[data-tag="deadline"] .dot{background:var(--rust);}
+  .chip[data-tag="mandatory"] .dot{background:var(--rust);}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;cursor:pointer;position:relative;overflow:hidden;transition:transform .15s ease, box-shadow .15s ease;display:flex;}
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 24px -12px rgba(110,20,35,0.25);}
+  .pin-rail{width:8px;flex-shrink:0;display:flex;flex-direction:column;}
+  .pin-rail i{flex:1;}
+  .pin-rail i.recruiting{background:var(--brass);}
+  .pin-rail i.event{background:var(--sage);}
+  .pin-rail i.deadline{background:var(--rust);}
+  .pin-rail i.none{background:var(--line);}
+  .card-body{padding:18px 18px 16px;flex:1;}
+  .card-top{display:flex;align-items:flex-start;gap:10px;}
+  .badge{width:34px;height:34px;border-radius:50%;background:linear-gradient(155deg,var(--ink),var(--ink-soft));color:var(--brass-soft);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:14px;flex-shrink:0;border:1.5px solid var(--brass);}
+  .cat-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:0.1em;color:var(--slate);}
+  .card h3{font-size:18px;margin:2px 0 8px;font-weight:600;}
+  .card p.update{font-size:13px;color:var(--ink-soft);margin:10px 0 12px;line-height:1.4;}
+  .tag-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{font-size:10.5px;padding:3px 9px;border-radius:5px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;}
+  .tag.recruiting{background:var(--brass-soft);color:#7A5A0F;}
+  .tag.event{background:var(--sage-soft);color:#39472F;}
+  .tag.deadline{background:var(--rust-soft);color:#7E2A17;}
+  .tag.mandatory{background:var(--rust);color:#fff;}
+  .empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--slate);}
+
+  /* ---- Upcoming events list ---- */
+  .event-list{display:flex;flex-direction:column;gap:10px;}
+  .event-row{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:box-shadow .15s ease, transform .15s ease;}
+  .event-row:hover{transform:translateY(-2px);box-shadow:0 10px 24px -12px rgba(110,20,35,0.25);}
+  .event-date-badge{flex-shrink:0;width:64px;text-align:center;background:var(--brass-soft);border-radius:8px;padding:8px 4px;}
+  .event-date-badge .day-num{display:block;font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--ink);line-height:1.1;}
+  .event-date-badge .day-mon{display:block;font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.06em;}
+  .event-main{flex:1;min-width:0;}
+  .event-main .event-title{font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+  .event-main .event-meta{font-size:12px;color:var(--slate);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .event-main .event-meta .body-name{color:var(--ink-soft);font-weight:600;}
+  .event-badges{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:140px;}
+
+  .overlay{position:fixed;inset:0;background:rgba(110,20,35,0.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .overlay.show{display:flex;}
+  .modal{background:#fff;max-width:560px;width:100%;max-height:86vh;overflow-y:auto;border-radius:12px;}
+  .modal-head{background:var(--ink);color:#fff;padding:24px 26px 20px;position:relative;}
+  .modal-head .cat-label{color:#E7C9CE;}
+  .modal-head h2{margin:6px 0 0;font-size:24px;}
+  .close-btn{position:absolute;top:16px;right:18px;background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;}
+  .modal-tabs{display:flex;border-bottom:1px solid var(--line);padding:0 26px;}
+  .modal-tabs button{background:none;border:none;padding:13px 4px;margin-right:22px;font-size:13px;font-weight:600;color:var(--slate);border-bottom:2px solid transparent;cursor:pointer;font-family:'Work Sans',sans-serif;}
+  .modal-tabs button.active{color:var(--ink);border-color:var(--brass);}
+  .modal-pane{padding:20px 26px 26px;display:none;}
+  .modal-pane.active{display:block;}
+  .modal-pane p{font-size:13.5px;color:var(--ink-soft);line-height:1.6;}
+  .update-item{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;}
+  .update-item .update-title{font-size:13.5px;color:var(--ink);font-weight:600;margin-bottom:5px;}
+  .update-item .update-meta{font-size:11.5px;color:var(--slate);display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .poc-card{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:10px;}
+  .poc-avatar{width:38px;height:38px;border-radius:50%;background:var(--brass);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Fraunces',serif;}
+  .btn{display:inline-block;background:var(--ink);color:#fff;padding:9px 16px;border-radius:7px;font-size:13px;font-weight:600;border:none;cursor:pointer;margin-top:12px;}
+  .btn.ghost{background:none;border:1px solid var(--ink);color:var(--ink);}
+  .query-item{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:13px;}
+  .query-item .q{font-weight:600;margin-bottom:4px;}
+  .query-item .a{color:var(--sage);}
+  .query-item .pending{color:var(--rust);font-style:italic;}
+  textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:'Work Sans',sans-serif;font-size:13px;resize:vertical;min-height:60px;}
+  footer{text-align:center;padding:26px;color:var(--slate);font-size:12px;border-top:1px solid var(--line);}
+  .loading{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--slate);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <img class="logo" src="https://iimamritsar.ac.in/images/IIM_amritsar_logo_header.png" alt="IIM Amritsar logo">
+    <div class="brand-text">
+      <span class="mark">CCC Portal</span>
+      <span class="sub">Committees / Clubs / Cells · IIM Amritsar</span>
+    </div>
+  </div>
+  <div class="search"><input type="text" placeholder="Search a committee, club, or cell..." id="searchInput"></div>
+</div>
+
+<div class="ticker-wrap">
+  <span class="ticker-label">Live feed</span>
+  <span class="ticker-track" id="tickerTrack">Loading announcements…</span>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <h1>One board. Every body on campus.</h1>
+      <p>Every committee, club, and cell in one place — backed by a real database, so updates persist and sync live.</p>
+    </div>
+    <div class="stat-strip">
+      <div class="stat"><b id="statTotal">–</b><span>Bodies</span></div>
+      <div class="stat"><b id="statRecruit">–</b><span>Recruiting</span></div>
+      <div class="stat"><b id="statDeadline">–</b><span>Deadlines &lt;48h</span></div>
+      <div class="stat"><b id="statMandatory">–</b><span>Mandatory</span></div>
+    </div>
+  </div>
+
+  <div class="view-tabs" id="viewTabs">
+    <button class="view-tab active" data-view="bodies">Body Directory</button>
+    <button class="view-tab" data-view="events">Upcoming Events</button>
+  </div>
+
+  <!-- ===== Body Directory view ===== -->
+  <div class="view-pane active" data-view-pane="bodies">
+    <div class="filters" id="filters">
+      <div class="chip active" data-filter="all">All bodies</div>
+      <div class="chip" data-tag="recruiting"><span class="dot"></span>Recruiting now</div>
+      <div class="chip" data-tag="event"><span class="dot"></span>Event this week</div>
+      <div class="chip" data-tag="deadline"><span class="dot"></span>Deadline in 48h</div>
+      <div class="chip" data-tag="mandatory"><span class="dot"></span>Mandatory participation</div>
+      <div class="chip" data-filter="Committee">Committees</div>
+      <div class="chip" data-filter="Club">Clubs</div>
+      <div class="chip" data-filter="Cell">Cells</div>
+    </div>
+    <div class="grid" id="grid"><div class="loading">Loading bodies from the database…</div></div>
+  </div>
+
+  <!-- ===== Upcoming Events view ===== -->
+  <div class="view-pane" data-view-pane="events">
+    <p style="color:var(--slate);font-size:13.5px;margin:-6px 0 20px;">Every dated event across every committee, club, and cell — in chronological order. Events marked <strong style="color:var(--rust);">MANDATORY</strong> require participation.</p>
+    <div class="event-list" id="eventList"><div class="loading">Loading upcoming events…</div></div>
+  </div>
+</div>
+
+<footer>Full-stack prototype — Node + Express + SQLite · IIM Amritsar</footer>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+
+<script>
+const API = '';
+let activeFilter = 'all';
+let activeTag = null;
+let currentBodies = [];
+let currentEvents = [];
+
+// ---------- View tab switching ----------
+document.getElementById('viewTabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.view-tab');
+  if(!btn) return;
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelector(`.view-pane[data-view-pane="${btn.dataset.view}"]`).classList.add('active');
+  if(btn.dataset.view === 'events' && !currentEvents.length) fetchEvents();
+});
+
+// ---------- Bodies ----------
+async function fetchBodies(){
+  const params = new URLSearchParams();
+  if(activeFilter !== 'all') params.set('category', activeFilter);
+  if(activeTag) params.set('tag', activeTag);
+  const q = document.getElementById('searchInput').value.trim();
+  if(q) params.set('search', q);
+  const res = await fetch(`${API}/api/bodies?${params.toString()}`);
+  currentBodies = await res.json();
+  renderGrid();
+}
+
+async function fetchStats(){
+  const res = await fetch(`${API}/api/stats`);
+  const stats = await res.json();
+  document.getElementById('statTotal').textContent = stats.total;
+  document.getElementById('statRecruit').textContent = stats.recruiting;
+  document.getElementById('statDeadline').textContent = stats.deadlines;
+  document.getElementById('statMandatory').textContent = stats.mandatory;
+}
+
+async function fetchTicker(){
+  const res = await fetch(`${API}/api/bodies`);
+  const all = await res.json();
+  const items = all.filter(b => b.tags.length).map(b => `<span>${b.name}: ${b.latest_update}</span>`).join('');
+  document.getElementById('tickerTrack').innerHTML = items || 'No live announcements right now.';
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  let bodies = currentBodies;
+  if(activeTag === 'mandatory') bodies = bodies.filter(b => b.has_mandatory);
+  if(!bodies.length){
+    grid.innerHTML = `<div class="empty">No bodies match this filter. Try clearing search or tags.</div>`;
+    return;
+  }
+  grid.innerHTML = bodies.map(b => {
+    const railTags = b.tags.length ? b.tags : ['none'];
+    return `
+      <div class="card" onclick="openModal(${b.id})">
+        <div class="pin-rail">${railTags.map(t=>`<i class="${t}"></i>`).join('')}</div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="badge">${b.name.charAt(0)}</div>
+            <div>
+              <div class="cat-label">${b.category}</div>
+              <h3>${b.name}</h3>
+            </div>
+          </div>
+          <p class="update">${b.latest_update}</p>
+          <div class="tag-row">
+            ${b.has_mandatory ? '<span class="tag mandatory">Mandatory</span>' : ''}
+            ${b.tags.map(t=>`<span class="tag ${t}">${t==='recruiting'?'Recruiting':t==='event'?'Event soon':'Deadline near'}</span>`).join('')}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('filters').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  if(chip.dataset.filter){
+    activeFilter = chip.dataset.filter;
+    activeTag = null;
+    [...filters.children].forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    fetchBodies();
+  } else if(chip.dataset.tag){
+    activeTag = activeTag === chip.dataset.tag ? null : chip.dataset.tag;
+    [...filters.children].forEach(c=>{
+      if(c.dataset.tag) c.classList.toggle('active', c.dataset.tag===activeTag);
+    });
+    if(chip.dataset.tag === 'mandatory'){
+      renderGrid(); // client-side filter, no need to re-fetch
+    } else {
+      fetchBodies();
+    }
+  }
+});
+document.getElementById('searchInput').addEventListener('input', fetchBodies);
+
+// ---------- Upcoming Events ----------
+async function fetchEvents(){
+  const res = await fetch(`${API}/api/events/upcoming`);
+  currentEvents = await res.json();
+  renderEvents();
+}
+
+function formatDateBadge(dateStr){
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  return { num: d, mon: months[m - 1] };
+}
+
+function renderEvents(){
+  const list = document.getElementById('eventList');
+  if(!currentEvents.length){
+    list.innerHTML = `<div class="empty">No upcoming dated events right now.</div>`;
+    return;
+  }
+  list.innerHTML = currentEvents.map(ev => {
+    const badge = formatDateBadge(ev.event_date);
+    return `
+      <div class="event-row" onclick="openModal(${ev.body_id})">
+        <div class="event-date-badge">
+          <span class="day-num">${badge.num}</span>
+          <span class="day-mon">${badge.mon}</span>
+        </div>
+        <div class="event-main">
+          <div class="event-title">${ev.title}</div>
+          <div class="event-meta">
+            <span>${ev.day_name}${ev.time_range ? ', ' + ev.time_range : ''}</span>
+            <span class="body-name">${ev.body_name}</span>
+            <span>${ev.body_category}</span>
+          </div>
+        </div>
+        <div class="event-badges">
+          ${ev.is_mandatory ? '<span class="tag mandatory">Mandatory</span>' : ''}
+          <span class="tag ${ev.tag}">${ev.tag === 'recruiting' ? 'Recruiting' : ev.tag === 'deadline' ? 'Deadline' : ev.tag === 'event' ? 'Event' : ''}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ---- Modal ----
+const overlay = document.getElementById('overlay');
+const modal = document.getElementById('modal');
+
+async function openModal(id){
+  const res = await fetch(`${API}/api/bodies/${id}`);
+  const b = await res.json();
+  const qRes = await fetch(`${API}/api/bodies/${id}/queries`);
+  const queries = await qRes.json();
+
+  modal.innerHTML = `
+    <div class="modal-head">
+      <button class="close-btn" onclick="closeModal()">✕</button>
+      <div class="cat-label">${b.category}</div>
+      <h2>${b.name}</h2>
+    </div>
+    <div class="modal-tabs">
+      <button class="active" data-tab="updates">Updates</button>
+      <button data-tab="resources">Resources</button>
+      <button data-tab="poc">Contact POC</button>
+      <button data-tab="query">Ask a query</button>
+    </div>
+    <div class="modal-pane active" data-pane="updates">
+      <p>${b.description || 'No description yet.'}</p>
+      ${b.updates.map(u => `
+        <div class="update-item">
+          <div class="update-title">${u.is_mandatory ? '<span style="color:var(--rust);">[MANDATORY]</span> ' : ''}${u.tag !== 'none' ? '[' + u.tag + '] ' : ''}${u.title}</div>
+          ${u.event_date ? `<div class="update-meta"><span>📅 ${u.event_date}</span><span>${u.day_name}</span>${u.time_range ? `<span>🕒 ${u.time_range}</span>` : ''}</div>` : ''}
+        </div>
+      `).join('') || '<p>No updates yet.</p>'}
+    </div>
+    <div class="modal-pane" data-pane="resources">
+      ${b.resources.length ? b.resources.map(r=>`<p>📄 ${r.title}</p>`).join('') : '<p>No shared resources posted yet.</p>'}
+    </div>
+    <div class="modal-pane" data-pane="poc">
+      <div class="poc-card">
+        <div class="poc-avatar">${(b.poc_name||'?').charAt(0)}</div>
+        <div><strong>${b.poc_name || 'Not assigned'}</strong><div style="font-size:12px;color:var(--slate);">${b.poc_contact || ''}</div></div>
+      </div>
+    </div>
+    <div class="modal-pane" data-pane="query">
+      <div id="queryList">
+        ${queries.map(item=>`<div class="query-item"><div class="q">Q: ${item.question}</div><div class="${item.answer ? 'a' : 'pending'}">${item.answer ? 'A: '+item.answer : 'Awaiting a reply from the body...'}</div></div>`).join('') || '<p>No queries yet — be the first to ask.</p>'}
+      </div>
+      <textarea id="queryInput" placeholder="Type your question for ${b.name}..."></textarea>
+      <button class="btn" onclick="postQuery(${b.id})">Post query</button>
+    </div>
+  `;
+  modal.querySelectorAll('.modal-tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      modal.querySelectorAll('.modal-tabs button').forEach(x=>x.classList.remove('active'));
+      modal.querySelectorAll('.modal-pane').forEach(x=>x.classList.remove('active'));
+      btn.classList.add('active');
+      modal.querySelector(`.modal-pane[data-pane="${btn.dataset.tab}"]`).classList.add('active');
+    });
+  });
+  overlay.classList.add('show');
+}
+
+async function postQuery(bodyId){
+  const input = document.getElementById('queryInput');
+  const question = input.value.trim();
+  if(!question) return;
+  await fetch(`${API}/api/bodies/${bodyId}/queries`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question })
+  });
+  openModal(bodyId); // refresh with the new query shown
+}
+
+function closeModal(){ overlay.classList.remove('show'); }
+overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeModal(); });
+
+// ---- Init ----
+fetchBodies();
+fetchStats();
+fetchTicker();
+</script>
+</body>
+</html>
