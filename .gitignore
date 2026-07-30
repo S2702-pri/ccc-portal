@@ -1,0 +1,5 @@
+node_modules/
+db/ccc.db
+db/ccc.db-wal
+db/ccc.db-shm
+.DS_Store
